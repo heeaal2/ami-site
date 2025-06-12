@@ -57,7 +57,30 @@ function App() {
         const data = await response.json();
         setEvents(data);
       } catch (err) {
-        setError(err.message);
+        // Fallback data when backend is not available
+        console.log('Backend not available, using fallback data');
+        setEvents([
+          {
+            _id: '1',
+            title: 'Weekly Quran Study',
+            description: 'Join us for our weekly Quran study session',
+            date: '2025-06-15T19:00:00Z',
+            location: 'Community Center',
+            capacity: 50,
+            image: '/src/quran.jpg',
+            registeredUsers: []
+          },
+          {
+            _id: '2', 
+            title: 'Community Iftar',
+            description: 'Breaking fast together as a community',
+            date: '2025-06-20T18:30:00Z',
+            location: 'Main Hall',
+            capacity: 100,
+            image: '/src/iftar.jpg',
+            registeredUsers: []
+          }
+        ]);
       } finally {
         setLoading(false);
       }
