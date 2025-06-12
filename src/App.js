@@ -63,9 +63,15 @@ function App() {
     const fetchEvents = async () => {
       try {
         const baseUrl = process.env.NODE_ENV === 'production' 
-          ? 'https://ami-backend-g4hd.onrender.com'
+          ? 'https://api.allorigins.win/raw?url=https://ami-backend-g4hd.onrender.com'
           : 'http://localhost:5001';
-        const response = await fetch(`${baseUrl}/api/events`);
+        const response = await fetch(`${baseUrl}/api/events`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          mode: 'cors'
+        });
         if (!response.ok) throw new Error('Failed to fetch events');
         const data = await response.json();
         setEvents(data);
@@ -124,7 +130,7 @@ function App() {
     
     try {
       const baseUrl = process.env.NODE_ENV === 'production' 
-        ? 'https://ami-backend-g4hd.onrender.com'
+        ? 'https://api.allorigins.win/raw?url=https://ami-backend-g4hd.onrender.com'
         : 'http://localhost:5001';
       const response = await fetch(`${baseUrl}/api/events/${selectedEvent._id}/register`, {
         method: 'POST',
