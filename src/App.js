@@ -6,14 +6,12 @@ import EventCard from './components/EventCard';
 import './App.css';
 import AdminPage from './AdminPage';
 
-function EventsOnly({ events, loading, error, handleEventSelect }) {
+function EventsOnly({ events, loading, handleEventSelect }) {
   return (
     <main className="main-content">
       <h2 className="ongoing-title">Events</h2>
       {loading ? (
         <div>Loading events...</div>
-      ) : error ? (
-        <div style={{color: 'red'}}>Error: {error}</div>
       ) : (
         <div className="event-cards-row">
           {events.map((event, idx) => {
@@ -41,7 +39,6 @@ function EventsOnly({ events, loading, error, handleEventSelect }) {
 function App() {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [formData, setFormData] = useState({ name: '', phoneNumber: '', attendDate: '' });
   const [showAdmin, setShowAdmin] = useState(false);
@@ -171,8 +168,6 @@ function App() {
             <h2 className="ongoing-title">Events</h2>
             {loading ? (
               <div>Loading events...</div>
-            ) : error ? (
-              <div style={{color: 'red'}}>Error: {error}</div>
             ) : (
               <div className="event-cards-row">
                 {events.map((event, idx) => {
@@ -259,7 +254,7 @@ function App() {
           </main>
         } />
         <Route path="/events" element={
-          <EventsOnly events={events} loading={loading} error={error} handleEventSelect={handleEventSelect} />
+          <EventsOnly events={events} loading={loading} handleEventSelect={handleEventSelect} />
         } />
       </Routes>
       <Footer onLogoClick={handleFooterLogoClick} />
