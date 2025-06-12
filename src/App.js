@@ -6,10 +6,22 @@ import EventCard from './components/EventCard';
 import './App.css';
 import AdminPage from './AdminPage';
 
-function EventsOnly({ events, loading, handleEventSelect }) {
+function EventsOnly({ events, loading, handleEventSelect, usingFallbackData }) {
   return (
     <main className="main-content">
       <h2 className="ongoing-title">Events</h2>
+      {usingFallbackData && (
+        <div style={{
+          backgroundColor: '#fff3cd',
+          color: '#856404',
+          padding: '10px',
+          borderRadius: '5px',
+          margin: '10px 0',
+          textAlign: 'center'
+        }}>
+          ⚠️ Showing sample events. Backend server is currently unavailable.
+        </div>
+      )}
       {loading ? (
         <div>Loading events...</div>
       ) : (
@@ -45,6 +57,7 @@ function App() {
   const [showAdminLogin, setShowAdminLogin] = useState(false);
   const [adminPassword, setAdminPassword] = useState('');
   const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false);
+  const [usingFallbackData, setUsingFallbackData] = useState(false);
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -59,6 +72,7 @@ function App() {
       } catch (err) {
         // Fallback data when backend is not available
         console.log('Backend not available, using fallback data');
+        setUsingFallbackData(true);
         setEvents([
           {
             _id: '1',
@@ -101,6 +115,13 @@ function App() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Check if using fallback data
+    if (usingFallbackData) {
+      alert('Registration is currently unavailable. Please try again later when the server is online.');
+      return;
+    }
+    
     try {
       const baseUrl = process.env.NODE_ENV === 'production' 
         ? 'https://ami-backend-g4hd.onrender.com'
@@ -166,6 +187,18 @@ function App() {
               <h2 className="ami-subtitle">Asosiasi Muslim Indonesia</h2>
             </div>
             <h2 className="ongoing-title">Events</h2>
+            {usingFallbackData && (
+              <div style={{
+                backgroundColor: '#fff3cd',
+                color: '#856404',
+                padding: '10px',
+                borderRadius: '5px',
+                margin: '10px 0',
+                textAlign: 'center'
+              }}>
+                ⚠️ Showing sample events. Backend server is currently unavailable.
+              </div>
+            )}
             {loading ? (
               <div>Loading events...</div>
             ) : (
@@ -231,7 +264,9 @@ function App() {
                         required
                       />
                     </div>
-                    <button type="submit">Register</button>
+                    <button type="submit" disabled={usingFallbackData}>
+                      {usingFallbackData ? 'Registration Unavailable' : 'Register'}
+                    </button>
                   </form>
                 </div>
               </div>
@@ -254,7 +289,7 @@ function App() {
           </main>
         } />
         <Route path="/events" element={
-          <EventsOnly events={events} loading={loading} handleEventSelect={handleEventSelect} />
+          <EventsOnly events={events} loading={loading} handleEventSelect={handleEventSelect} usingFallbackData={usingFallbackData} />
         } />
       </Routes>
       <Footer onLogoClick={handleFooterLogoClick} />

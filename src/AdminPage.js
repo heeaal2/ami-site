@@ -5,8 +5,8 @@ import * as XLSX from 'xlsx';
 function AdminPage() {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const [backendAvailable, setBackendAvailable] = useState(true);
   const [newEvent, setNewEvent] = useState({
     title: '',
     description: '',
@@ -35,9 +35,12 @@ function AdminPage() {
       }
       const data = await response.json();
       setEvents(data);
+      setBackendAvailable(true);
       setLoading(false);
     } catch (error) {
-      setError(error.message);
+      console.log('Backend not available for admin panel');
+      setBackendAvailable(false);
+      setEvents([]); // Empty events when backend is down
       setLoading(false);
     }
   };
@@ -68,6 +71,11 @@ function AdminPage() {
 
   const handleCreateEvent = async (e) => {
     e.preventDefault();
+    
+    if (!backendAvailable) {
+      alert('Cannot create events while backend is unavailable. Please try again later.');
+      return;
+    }
     
     try {
       // First, upload the image if one is selected
@@ -127,11 +135,16 @@ function AdminPage() {
       setShowCreateForm(false);
       fetchAdminData();
     } catch (error) {
-      setError(error.message);
+      alert('Error creating event: ' + error.message);
     }
   };
 
   const handleDeleteEvent = async (eventId, eventTitle) => {
+    if (!backendAvailable) {
+      alert('Cannot delete events while backend is unavailable. Please try again later.');
+      return;
+    }
+    
     if (!window.confirm(`Are you sure you want to delete "${eventTitle}"?`)) {
       return;
     }
@@ -152,7 +165,6 @@ function AdminPage() {
       fetchAdminData();
       alert('Event deleted successfully!');
     } catch (error) {
-      setError(error.message);
       alert('Error deleting event: ' + error.message);
     }
   };
@@ -195,20 +207,47 @@ function AdminPage() {
   };
 
   if (loading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error}</div>;
 
   return (
     <div className="admin-page">
       <h1>Admin Dashboard</h1>
       
+      {!backendAvailable && (
+        <div style={{
+          backgroundColor: '#fff3cd',
+          color: '#856404',
+          padding: '15px',
+          borderRadius: '5px',
+          margin: '10px 0',
+          textAlign: 'center'
+        }}>
+          ⚠️ Backend server is currently unavailable. Admin features are limited.
+        </div>
+      )}
+      
       <button 
         className="create-event-btn"
         onClick={() => setShowCreateForm(!showCreateForm)}
+        disabled={!backendAvailable}
+        style={{
+          opacity: backendAvailable ? 1 : 0.5,
+          cursor: backendAvailable ? 'pointer' : 'not-allowed'
+        }}
       >
         {showCreateForm ? 'Cancel' : 'Create New Event'}
       </button>
 
-      <button className="create-event-btn" style={{background:'#2196f3',marginLeft:8}} onClick={handleExportExcel}>
+      <button 
+        className="create-event-btn" 
+        style={{
+          background:'#2196f3',
+          marginLeft:8,
+          opacity: events.length > 0 ? 1 : 0.5,
+          cursor: events.length > 0 ? 'pointer' : 'not-allowed'
+        }} 
+        onClick={handleExportExcel}
+        disabled={events.length === 0}
+      >
         Export to Excel
       </button>
 
@@ -287,7 +326,17 @@ function AdminPage() {
                 </div>
               )}
             </div>
-            <button type="submit" className="submit-btn">Create Event</button>
+            <button 
+              type="submit" 
+              className="submit-btn"
+              disabled={!backendAvailable}
+              style={{
+                opacity: backendAvailable ? 1 : 0.5,
+                cursor: backendAvailable ? 'pointer' : 'not-allowed'
+              }}
+            >
+              Create Event
+            </button>
           </form>
         </div>
       )}
@@ -306,20 +355,34 @@ function AdminPage() {
       )}
 
       <div className="events-list">
-        {events.map((event, index) => (
+        {events.length === 0 ? (
+          <div style={{
+            textAlign: 'center', 
+            padding: '40px', 
+            color: '#666',
+            backgroundColor: '#f5f5f5',
+            borderRadius: '8px',
+            margin: '20px 0'
+          }}>
+            {backendAvailable ? 'No events created yet.' : 'No events available while backend is offline.'}
+          </div>
+        ) : (
+          events.map((event, index) => (
           <div key={index} className="event-section">
             <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
               <h2>{event.eventTitle}</h2>
               <button 
                 className="delete-btn"
                 onClick={() => handleDeleteEvent(event._id, event.eventTitle)}
+                disabled={!backendAvailable}
                 style={{
                   backgroundColor: '#ff4444',
                   color: 'white',
                   border: 'none',
                   padding: '8px 16px',
                   borderRadius: '4px',
-                  cursor: 'pointer'
+                  cursor: backendAvailable ? 'pointer' : 'not-allowed',
+                  opacity: backendAvailable ? 1 : 0.5
                 }}
               >
                 Delete Event
@@ -353,7 +416,8 @@ function AdminPage() {
               </table>
             </div>
           </div>
-        ))}
+          ))
+        )}
       </div>
     </div>
   );
