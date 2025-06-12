@@ -1,0 +1,73 @@
+{
+	"_id": {
+		"$oid": "684986d9c510232c480c4a17"
+	},
+	"title": "Rumah Qur'an",
+	"description": "anjaaaayy",
+	"date": {
+		"$date": "2025-06-14T09:00:00Z"
+	},
+	"location": "RUMAH CKPTW",
+	"capacity": 30,
+	"image": "/event-images/quran.jpg",
+	"registeredUsers": [
+		{
+			"name": "testing",
+			"phoneNumber": "12309810839",
+			"attendDate": {
+				"$date": "2025-06-12T00:00:00Z"
+			},
+			"_id": {
+				"$oid": "684ac15dc510232c480c4a48"
+			},
+			"registrationDate": {
+				"$date": "2025-06-12T12:00:29.197Z"
+			}
+		}
+	],
+	"__v": 1
+}
+{
+	"_id": {
+		"$oid": "684abd9cc510232c480c4a3d"
+	},
+	"title": "makan makan",
+	"description": "test ajee ",
+	"date": {
+		"$date": "2025-06-12T11:44:00Z"
+	},
+	"location": "RUMAH CKPTW",
+	"capacity": 100,
+	"image": "/event-images/bbq.jpg",
+	"registeredUsers": [
+		{
+			"name": "bosadkjaw",
+			"phoneNumber": "2301",
+			"attendDate": {
+				"$date": "2025-06-12T00:00:00Z"
+			},
+			"_id": {
+				"$oid": "684ac167c510232c480c4a4b"
+			},
+			"registrationDate": {
+				"$date": "2025-06-12T12:00:39.164Z"
+			}
+		}
+	],
+	"__v": 1
+}
+{
+	"_id": {
+		"$oid": "684acb6b62f94620a5909c5a"
+	},
+	"title": "test2",
+	"description": "testing",
+	"date": {
+		"$date": "2025-06-12T12:42:00Z"
+	},
+	"location": "runmah aing",
+	"capacity": 123,
+	"image": "/event-images/1749732203446-876461810-Street Light Photo.jpg",
+	"registeredUsers": [],
+	"__v": 0
+}

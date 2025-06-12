@@ -25,9 +25,8 @@ function AdminPage() {
 
   const fetchAdminData = async () => {
     try {
-      // Use Render URL for production, localhost for development
       const baseUrl = process.env.NODE_ENV === 'production' 
-        ? 'https://ami-backend-g4hd.onrender.com' 
+        ? 'https://ami-backend-g4hd.onrender.com'
         : 'http://localhost:5001';
       const response = await fetch(`${baseUrl}/api/admin/events`);
       if (!response.ok) {
