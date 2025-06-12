@@ -25,8 +25,10 @@ function AdminPage() {
 
   const fetchAdminData = async () => {
     try {
-      // Use relative URL for production, absolute for development
-      const baseUrl = process.env.NODE_ENV === 'production' ? '' : 'http://localhost:5001';
+      // Use Render URL for production, localhost for development
+      const baseUrl = process.env.NODE_ENV === 'production' 
+        ? 'https://ami-backend-g4hd.onrender.com' 
+        : 'http://localhost:5001';
       const response = await fetch(`${baseUrl}/api/admin/events`);
       if (!response.ok) {
         throw new Error('Failed to fetch admin data');
@@ -73,7 +75,9 @@ function AdminPage() {
         const formData = new FormData();
         formData.append('image', selectedFile);
         
-        const baseUrl = process.env.NODE_ENV === 'production' ? '' : 'http://localhost:5001';
+        const baseUrl = process.env.NODE_ENV === 'production' 
+          ? 'https://ami-backend-g4hd.onrender.com' 
+          : 'http://localhost:5001';
         const uploadResponse = await fetch(`${baseUrl}/api/upload`, {
           method: 'POST',
           body: formData,
@@ -89,7 +93,9 @@ function AdminPage() {
       }
 
       console.log('Submitting event:', JSON.stringify(newEvent, null, 2));
-      const baseUrl = process.env.NODE_ENV === 'production' ? '' : 'http://localhost:5001';
+      const baseUrl = process.env.NODE_ENV === 'production' 
+        ? 'https://ami-backend-g4hd.onrender.com' 
+        : 'http://localhost:5001';
       const response = await fetch(`${baseUrl}/api/admin/events`, {
         method: 'POST',
         headers: {
@@ -131,7 +137,9 @@ function AdminPage() {
     }
 
     try {
-      const baseUrl = process.env.NODE_ENV === 'production' ? '' : 'http://localhost:5001';
+      const baseUrl = process.env.NODE_ENV === 'production' 
+        ? 'https://ami-backend-g4hd.onrender.com' 
+        : 'http://localhost:5001';
       const response = await fetch(`${baseUrl}/api/admin/events/${eventId}`, {
         method: 'DELETE',
       });

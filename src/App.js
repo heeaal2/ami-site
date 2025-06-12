@@ -52,7 +52,10 @@ function App() {
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const response = await fetch('/api/events');
+        const baseUrl = process.env.NODE_ENV === 'production' 
+          ? 'https://ami-backend-g4hd.onrender.com'
+          : 'http://localhost:5001';
+        const response = await fetch(`${baseUrl}/api/events`);
         if (!response.ok) throw new Error('Failed to fetch events');
         const data = await response.json();
         setEvents(data);
@@ -102,7 +105,10 @@ function App() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch(`/api/events/${selectedEvent._id}/register`, {
+      const baseUrl = process.env.NODE_ENV === 'production' 
+        ? 'https://ami-backend-g4hd.onrender.com'
+        : 'http://localhost:5001';
+      const response = await fetch(`${baseUrl}/api/events/${selectedEvent._id}/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
