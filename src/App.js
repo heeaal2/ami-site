@@ -1,0 +1,242 @@
+import React, { useEffect, useState } from 'react';
+import { Routes, Route, useNavigate } from 'react-router-dom';
+import Header from './components/Header';
+import Footer from './components/Footer';
+import EventCard from './components/EventCard';
+import './App.css';
+import AdminPage from './AdminPage';
+
+function EventsOnly({ events, loading, error, handleEventSelect }) {
+  return (
+    <main className="main-content">
+      <h2 className="ongoing-title">Events</h2>
+      {loading ? (
+        <div>Loading events...</div>
+      ) : error ? (
+        <div style={{color: 'red'}}>Error: {error}</div>
+      ) : (
+        <div className="event-cards-row">
+          {events.map((event, idx) => {
+            const eventDate = new Date(event.date);
+            const dateStr = eventDate.toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+            const timeStr = eventDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+            return (
+              <div key={event._id || idx} onClick={() => handleEventSelect(event)} style={{ cursor: 'pointer' }}>
+                <EventCard
+                  title={event.title}
+                  date={dateStr}
+                  time={timeStr}
+                  location={event.location}
+                  image={event.image}
+                />
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </main>
+  );
+}
+
+function App() {
+  const [events, setEvents] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [selectedEvent, setSelectedEvent] = useState(null);
+  const [formData, setFormData] = useState({ name: '', phoneNumber: '', attendDate: '' });
+  const [showAdmin, setShowAdmin] = useState(false);
+  const [showAdminLogin, setShowAdminLogin] = useState(false);
+  const [adminPassword, setAdminPassword] = useState('');
+  const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const response = await fetch('/api/events');
+        if (!response.ok) throw new Error('Failed to fetch events');
+        const data = await response.json();
+        setEvents(data);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchEvents();
+  }, []);
+
+  const handleEventSelect = (event) => {
+    setSelectedEvent(event);
+  };
+
+  const handleInputChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await fetch(`/api/events/${selectedEvent._id}/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+      const data = await response.json();
+      if (response.ok) {
+        alert('Registration successful!');
+        setFormData({ name: '', phoneNumber: '', attendDate: '' });
+        setSelectedEvent(null);
+        setEvents(events => events.map(ev => ev._id === data.event._id ? data.event : ev));
+      } else {
+        alert(data.message);
+      }
+    } catch (error) {
+      alert('Error registering for event');
+    }
+  };
+
+  const handleFooterLogoClick = () => {
+    setShowAdminLogin(true);
+  };
+
+  const handleAdminLogin = (e) => {
+    e.preventDefault();
+    if (adminPassword === 'bismillah123') {
+      setIsAdminAuthenticated(true);
+      setShowAdmin(true);
+      setShowAdminLogin(false);
+      setAdminPassword('');
+    } else {
+      alert('Incorrect password');
+    }
+  };
+
+  const handleContactClick = () => {
+    const footer = document.querySelector('.footer');
+    if (footer) {
+      footer.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+  if (showAdmin && isAdminAuthenticated) {
+    return <AdminPage />;
+  }
+
+  return (
+    <div className="main-bg">
+      <div className="bg-dot bg-dot1"></div>
+      <div className="bg-dot bg-dot2"></div>
+      <div className="bg-dot bg-dot3"></div>
+      <div className="bg-dot bg-dot4"></div>
+      <Header onContactClick={handleContactClick} />
+      <Routes>
+        <Route path="/" element={
+          <main className="main-content">
+            <div className="ami-title-section">
+              <h1 className="ami-title">AMI</h1>
+              <h2 className="ami-subtitle">Asosiasi Muslim Indonesia</h2>
+            </div>
+            <h2 className="ongoing-title">Events</h2>
+            {loading ? (
+              <div>Loading events...</div>
+            ) : error ? (
+              <div style={{color: 'red'}}>Error: {error}</div>
+            ) : (
+              <div className="event-cards-row">
+                {events.map((event, idx) => {
+                  const eventDate = new Date(event.date);
+                  const dateStr = eventDate.toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+                  const timeStr = eventDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+                  return (
+                    <div key={event._id || idx} onClick={() => handleEventSelect(event)} style={{ cursor: 'pointer' }}>
+                      <EventCard
+                        title={event.title}
+                        date={dateStr}
+                        time={timeStr}
+                        location={event.location}
+                        image={event.image}
+                      />
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+            {selectedEvent && (
+              <div className="event-details-modal">
+                <div className="event-details-content">
+                  <button className="close-btn" onClick={() => setSelectedEvent(null)} aria-label="Close">&times;</button>
+                  <h2>{selectedEvent.title}</h2>
+                  <p><strong>Description:</strong> {selectedEvent.description}</p>
+                  <p><strong>Date:</strong> {new Date(selectedEvent.date).toLocaleDateString()}</p>
+                  <p><strong>Location:</strong> {selectedEvent.location}</p>
+                  <p><strong>Available Spots:</strong> {selectedEvent.capacity - selectedEvent.registeredUsers.length}</p>
+                  <form onSubmit={handleSubmit}>
+                    <div className="form-group">
+                      <label htmlFor="name">Name:</label>
+                      <input
+                        type="text"
+                        id="name"
+                        name="name"
+                        value={formData.name}
+                        onChange={handleInputChange}
+                        required
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label htmlFor="phoneNumber">Phone Number:</label>
+                      <input
+                        type="tel"
+                        id="phoneNumber"
+                        name="phoneNumber"
+                        value={formData.phoneNumber}
+                        onChange={handleInputChange}
+                        required
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label htmlFor="attendDate">Date to Attend:</label>
+                      <input
+                        type="date"
+                        id="attendDate"
+                        name="attendDate"
+                        value={formData.attendDate}
+                        onChange={handleInputChange}
+                        required
+                      />
+                    </div>
+                    <button type="submit">Register</button>
+                  </form>
+                </div>
+              </div>
+            )}
+            {showAdminLogin && (
+              <div className="admin-login-modal">
+                <form onSubmit={handleAdminLogin} className="admin-login-form">
+                  <input
+                    type="password"
+                    placeholder="Enter admin password"
+                    value={adminPassword}
+                    onChange={e => setAdminPassword(e.target.value)}
+                    autoFocus
+                  />
+                  <button type="submit">Login</button>
+                  <button type="button" onClick={() => setShowAdminLogin(false)}>Cancel</button>
+                </form>
+              </div>
+            )}
+          </main>
+        } />
+        <Route path="/events" element={
+          <EventsOnly events={events} loading={loading} error={error} handleEventSelect={handleEventSelect} />
+        } />
+      </Routes>
+      <Footer onLogoClick={handleFooterLogoClick} />
+    </div>
+  );
+}
+
+export default App;
