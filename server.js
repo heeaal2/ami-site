@@ -2,6 +2,9 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const bodyParser = require('body-parser');
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
 require('dotenv').config();
 
 const app = express();
@@ -9,6 +12,42 @@ const app = express();
 // Middleware
 app.use(cors());
 app.use(bodyParser.json());
+
+// Create uploads directory if it doesn't exist
+const uploadsDir = path.join(__dirname, 'public/event-images');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
+// Serve static files from public directory
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Configure multer for file uploads
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, uploadsDir);
+  },
+  filename: function (req, file, cb) {
+    // Use original filename with timestamp to avoid conflicts
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, uniqueSuffix + '-' + file.originalname);
+  }
+});
+
+const upload = multer({ 
+  storage: storage,
+  fileFilter: function (req, file, cb) {
+    // Check if file is an image
+    if (file.mimetype.startsWith('image/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only image files are allowed!'), false);
+    }
+  },
+  limits: {
+    fileSize: 5 * 1024 * 1024 // 5MB limit
+  }
+});
 
 // Log all requests
 app.use((req, res, next) => {
@@ -54,6 +93,27 @@ const eventSchema = new mongoose.Schema({
 });
 
 const Event = mongoose.model('Event', eventSchema);
+
+// File upload route
+app.post('/api/upload', upload.single('image'), (req, res) => {
+  console.log('📸 File upload route hit!');
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: 'No file uploaded' });
+    }
+    
+    const imagePath = `/event-images/${req.file.filename}`;
+    console.log('✅ File uploaded successfully:', imagePath);
+    res.json({ 
+      message: 'File uploaded successfully',
+      imagePath: imagePath,
+      originalName: req.file.originalname
+    });
+  } catch (error) {
+    console.error('❌ Error uploading file:', error);
+    res.status(500).json({ message: error.message });
+  }
+});
 
 // Routes
 app.get('/api/events', async (req, res) => {

@@ -15,6 +15,8 @@ function AdminPage() {
     capacity: '',
     image: ''
   });
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
   const [confirmation, setConfirmation] = useState(null);
 
   useEffect(() => {
@@ -23,7 +25,9 @@ function AdminPage() {
 
   const fetchAdminData = async () => {
     try {
-      const response = await fetch('http://localhost:5001/api/admin/events');
+      // Use relative URL for production, absolute for development
+      const baseUrl = process.env.NODE_ENV === 'production' ? '' : 'http://localhost:5001';
+      const response = await fetch(`${baseUrl}/api/admin/events`);
       if (!response.ok) {
         throw new Error('Failed to fetch admin data');
       }
@@ -44,12 +48,49 @@ function AdminPage() {
     }));
   };
 
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setSelectedFile(file);
+      
+      // Create preview
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setImagePreview(e.target.result);
+      };
+      reader.readAsDataURL(file);
+
+      // Image path will be set after successful upload
+    }
+  };
+
   const handleCreateEvent = async (e) => {
     e.preventDefault();
-    console.log('newEvent.image specifically:', newEvent.image);
-    console.log('Submitting event:', JSON.stringify(newEvent, null, 2));
+    
     try {
-      const response = await fetch('http://localhost:5001/api/admin/events', {
+      // First, upload the image if one is selected
+      if (selectedFile) {
+        const formData = new FormData();
+        formData.append('image', selectedFile);
+        
+        const baseUrl = process.env.NODE_ENV === 'production' ? '' : 'http://localhost:5001';
+        const uploadResponse = await fetch(`${baseUrl}/api/upload`, {
+          method: 'POST',
+          body: formData,
+        });
+        
+        if (!uploadResponse.ok) {
+          throw new Error('Failed to upload image');
+        }
+        
+        const uploadResult = await uploadResponse.json();
+        // Update the event with the actual uploaded image path
+        newEvent.image = uploadResult.imagePath;
+      }
+
+      console.log('Submitting event:', JSON.stringify(newEvent, null, 2));
+      const baseUrl = process.env.NODE_ENV === 'production' ? '' : 'http://localhost:5001';
+      const response = await fetch(`${baseUrl}/api/admin/events`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -65,6 +106,7 @@ function AdminPage() {
         title: newEvent.title,
         image: newEvent.image
       });
+      
       // Reset form and refresh events
       setNewEvent({
         title: '',
@@ -74,6 +116,8 @@ function AdminPage() {
         capacity: '',
         image: ''
       });
+      setSelectedFile(null);
+      setImagePreview(null);
       setShowCreateForm(false);
       fetchAdminData();
     } catch (error) {
@@ -87,7 +131,8 @@ function AdminPage() {
     }
 
     try {
-      const response = await fetch(`http://localhost:5001/api/admin/events/${eventId}`, {
+      const baseUrl = process.env.NODE_ENV === 'production' ? '' : 'http://localhost:5001';
+      const response = await fetch(`${baseUrl}/api/admin/events/${eventId}`, {
         method: 'DELETE',
       });
 
@@ -214,14 +259,25 @@ function AdminPage() {
               />
             </div>
             <div className="form-group">
-              <label>Event Image Path:</label>
+              <label>Event Image:</label>
               <input
-                type="text"
-                name="image"
-                value={newEvent.image}
-                onChange={handleInputChange}
-                placeholder="/event-images/quran.jpg"
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                style={{marginBottom: '10px'}}
               />
+              {imagePreview && (
+                <div style={{marginTop: '10px'}}>
+                  <img 
+                    src={imagePreview} 
+                    alt="Preview" 
+                    style={{maxWidth: '200px', maxHeight: '150px', borderRadius: '8px'}}
+                  />
+                  <p style={{fontSize: '0.9em', marginTop: '5px', color: '#666'}}>
+                    Preview: {selectedFile?.name}
+                  </p>
+                </div>
+              )}
             </div>
             <button type="submit" className="submit-btn">Create Event</button>
           </form>
