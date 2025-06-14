@@ -29,7 +29,11 @@ function EventsOnly({ events, loading, handleEventSelect, usingFallbackData }) {
           {events.map((event, idx) => {
             const eventDate = new Date(event.date);
             const dateStr = eventDate.toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-            const timeStr = eventDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+            const timeStr = eventDate.toLocaleTimeString('en-US', { 
+              hour: '2-digit', 
+              minute: '2-digit',
+              timeZone: 'Asia/Kuala_Lumpur' // Malaysian time (UTC+8)
+            });
             return (
               <div key={event._id || idx} onClick={() => handleEventSelect(event)} style={{ cursor: 'pointer' }}>
                 <EventCard
@@ -212,7 +216,11 @@ function App() {
                 {events.map((event, idx) => {
                   const eventDate = new Date(event.date);
                   const dateStr = eventDate.toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-                  const timeStr = eventDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+                  const timeStr = eventDate.toLocaleTimeString('en-US', { 
+                    hour: '2-digit', 
+                    minute: '2-digit',
+                    timeZone: 'Asia/Kuala_Lumpur' // Malaysian time (UTC+8)
+                  });
                   return (
                     <div key={event._id || idx} onClick={() => handleEventSelect(event)} style={{ cursor: 'pointer' }}>
                       <EventCard
@@ -233,7 +241,8 @@ function App() {
                   <button className="close-btn" onClick={() => setSelectedEvent(null)} aria-label="Close">&times;</button>
                   <h2>{selectedEvent.title}</h2>
                   <p><strong>Description:</strong> {selectedEvent.description}</p>
-                  <p><strong>Date:</strong> {new Date(selectedEvent.date).toLocaleDateString()}</p>
+                  <p><strong>Date:</strong> {new Date(selectedEvent.date).toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</p>
+                  <p><strong>Time:</strong> {new Date(selectedEvent.date).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kuala_Lumpur' })}</p>
                   <p><strong>Location:</strong> {selectedEvent.location}</p>
                   <p><strong>Available Spots:</strong> {selectedEvent.capacity - selectedEvent.registeredUsers.length}</p>
                   <form onSubmit={handleSubmit}>
