@@ -186,10 +186,6 @@ function App() {
 
   return (
     <div className="main-bg">
-      <div className="bg-dot bg-dot1"></div>
-      <div className="bg-dot bg-dot2"></div>
-      <div className="bg-dot bg-dot3"></div>
-      <div className="bg-dot bg-dot4"></div>
       <Header onContactClick={handleContactClick} />
       <Routes>
         <Route path="/" element={
