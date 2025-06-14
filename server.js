@@ -311,10 +311,18 @@ app.post('/api/admin/events', async (req, res) => {
   console.log('Request body:', req.body);
   try {
     const { title, description, date, location, capacity, image } = req.body;
+    
+    // Parse the datetime-local input as Malaysian time
+    // datetime-local gives us "2024-01-15T14:30" format
+    // We need to treat this as Malaysian time (UTC+8)
+    const eventDate = new Date(date + '+08:00'); // Add Malaysian timezone offset
+    console.log('📅 Original date string:', date);
+    console.log('📅 Parsed as Malaysian time:', eventDate.toISOString());
+    
     const newEvent = new Event({
       title,
       description,
-      date: new Date(date),
+      date: eventDate,
       location,
       capacity,
       image: image || '',

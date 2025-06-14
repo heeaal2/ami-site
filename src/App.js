@@ -29,10 +29,12 @@ function EventsOnly({ events, loading, handleEventSelect, usingFallbackData }) {
           {events.map((event, idx) => {
             const eventDate = new Date(event.date);
             const dateStr = eventDate.toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+            // Display time in Malaysian timezone since backend stores it correctly
             const timeStr = eventDate.toLocaleTimeString('en-US', { 
               hour: '2-digit', 
               minute: '2-digit',
-              timeZone: 'Asia/Kuala_Lumpur' // Malaysian time (UTC+8)
+              timeZone: 'Asia/Kuala_Lumpur',
+              hour12: true // Show AM/PM
             });
             return (
               <div key={event._id || idx} onClick={() => handleEventSelect(event)} style={{ cursor: 'pointer' }}>
@@ -216,10 +218,12 @@ function App() {
                 {events.map((event, idx) => {
                   const eventDate = new Date(event.date);
                   const dateStr = eventDate.toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+                  // Display time in Malaysian timezone since backend stores it correctly
                   const timeStr = eventDate.toLocaleTimeString('en-US', { 
                     hour: '2-digit', 
                     minute: '2-digit',
-                    timeZone: 'Asia/Kuala_Lumpur' // Malaysian time (UTC+8)
+                    timeZone: 'Asia/Kuala_Lumpur',
+                    hour12: true // Show AM/PM
                   });
                   return (
                     <div key={event._id || idx} onClick={() => handleEventSelect(event)} style={{ cursor: 'pointer' }}>
@@ -242,7 +246,7 @@ function App() {
                   <h2>{selectedEvent.title}</h2>
                   <p><strong>Description:</strong> {selectedEvent.description}</p>
                   <p><strong>Date:</strong> {new Date(selectedEvent.date).toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</p>
-                  <p><strong>Time:</strong> {new Date(selectedEvent.date).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kuala_Lumpur' })}</p>
+                  <p><strong>Time:</strong> {new Date(selectedEvent.date).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kuala_Lumpur', hour12: true })}</p>
                   <p><strong>Location:</strong> {selectedEvent.location}</p>
                   <p><strong>Available Spots:</strong> {selectedEvent.capacity - selectedEvent.registeredUsers.length}</p>
                   <form onSubmit={handleSubmit}>
