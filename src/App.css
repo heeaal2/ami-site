@@ -54,7 +54,7 @@ body, .main-bg {
 }
 
 .main-content {
-  padding-top: 70px; /* Add space for the fixed header */
+  padding-top: 120px; /* Add more space for the fixed header */
   width: 100%;
   max-width: 100%;
   margin: 0 auto;
@@ -259,6 +259,20 @@ body, .main-bg {
   }
 }
 
+@media (max-width: 480px) {
+  .main-content {
+    padding-top: 90px; /* Even smaller padding for very small screens */
+  }
+  
+  .ami-title {
+    font-size: 3.5rem; /* Slightly smaller on very small screens */
+  }
+  
+  .ami-subtitle {
+    font-size: 1.2rem;
+  }
+}
+
 /* Admin Page Styles */
 .admin-page {
   padding: 20px;
@@ -447,6 +461,7 @@ body, .main-bg {
   .main-content {
     padding-left: 0.5rem;
     padding-right: 0.5rem;
+    padding-top: 100px; /* Adjust for mobile header */
     text-align: center;
   }
   
