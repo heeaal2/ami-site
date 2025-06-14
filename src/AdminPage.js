@@ -26,7 +26,7 @@ function AdminPage() {
   const fetchAdminData = async () => {
     try {
       const baseUrl = process.env.NODE_ENV === 'production' 
-        ? 'https://api.allorigins.win/raw?url=https://ami-backend-g4hd.onrender.com'
+        ? 'https://ami-backend-g4hd.onrender.com'
         : 'http://localhost:5001';
       const response = await fetch(`${baseUrl}/api/admin/events`, {
         method: 'GET',
@@ -89,7 +89,7 @@ function AdminPage() {
         formData.append('image', selectedFile);
         
         const baseUrl = process.env.NODE_ENV === 'production' 
-          ? 'https://api.allorigins.win/raw?url=https://ami-backend-g4hd.onrender.com' 
+          ? 'https://ami-backend-g4hd.onrender.com' 
           : 'http://localhost:5001';
         const uploadResponse = await fetch(`${baseUrl}/api/upload`, {
           method: 'POST',
@@ -107,7 +107,7 @@ function AdminPage() {
 
       console.log('Submitting event:', JSON.stringify(newEvent, null, 2));
       const baseUrl = process.env.NODE_ENV === 'production' 
-        ? 'https://api.allorigins.win/raw?url=https://ami-backend-g4hd.onrender.com' 
+        ? 'https://ami-backend-g4hd.onrender.com' 
         : 'http://localhost:5001';
       const response = await fetch(`${baseUrl}/api/admin/events`, {
         method: 'POST',
@@ -156,7 +156,7 @@ function AdminPage() {
 
     try {
       const baseUrl = process.env.NODE_ENV === 'production' 
-        ? 'https://api.allorigins.win/raw?url=https://ami-backend-g4hd.onrender.com' 
+        ? 'https://ami-backend-g4hd.onrender.com' 
         : 'http://localhost:5001';
       const response = await fetch(`${baseUrl}/api/admin/events/${eventId}`, {
         method: 'DELETE',

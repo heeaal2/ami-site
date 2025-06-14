@@ -35,7 +35,7 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization', 'Origin', 'X-Requested-With', 'Accept'],
   optionsSuccessStatus: 200
 }));
-app.use(bodyParser.json());
+app.use(bodyParser.json({ limit: '20mb' }));
 
 // Additional manual CORS headers as backup
 app.use((req, res, next) => {
@@ -83,7 +83,7 @@ const upload = multer({
     }
   },
   limits: {
-    fileSize: 5 * 1024 * 1024 // 5MB limit
+    fileSize: 20 * 1024 * 1024 // 5MB limit
   }
 });
 
@@ -165,25 +165,32 @@ app.get('/api/events', async (req, res) => {
 });
 
 app.post('/api/events/:eventId/register', async (req, res) => {
+  console.log('🎯 Registration route hit!');
+  console.log('Event ID:', req.params.eventId);
+  console.log('Request body:', req.body);
   try {
     const { eventId } = req.params;
     const { name, phoneNumber, attendDate } = req.body;
 
     const event = await Event.findById(eventId);
     if (!event) {
+      console.log('❌ Event not found:', eventId);
       return res.status(404).json({ message: 'Event not found' });
     }
 
     if (event.registeredUsers.length >= event.capacity) {
+      console.log('❌ Event is full');
       return res.status(400).json({ message: 'Event is full' });
     }
 
+    console.log('📝 Adding user to event:', { name, phoneNumber, attendDate });
     event.registeredUsers.push({ name, phoneNumber, attendDate });
     await event.save();
+    console.log('✅ User registered successfully! Total registered:', event.registeredUsers.length);
 
     res.json({ message: 'Registration successful', event });
   } catch (error) {
-    console.error('Error registering for event:', error);
+    console.error('❌ Error registering for event:', error);
     res.status(500).json({ message: error.message });
   }
 });

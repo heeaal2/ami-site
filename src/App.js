@@ -63,7 +63,7 @@ function App() {
     const fetchEvents = async () => {
       try {
         const baseUrl = process.env.NODE_ENV === 'production' 
-          ? 'https://api.allorigins.win/raw?url=https://ami-backend-g4hd.onrender.com'
+          ? 'https://ami-backend-g4hd.onrender.com'
           : 'http://localhost:5001';
         const response = await fetch(`${baseUrl}/api/events`, {
           method: 'GET',
@@ -130,7 +130,7 @@ function App() {
     
     try {
       const baseUrl = process.env.NODE_ENV === 'production' 
-        ? 'https://api.allorigins.win/raw?url=https://ami-backend-g4hd.onrender.com'
+        ? 'https://ami-backend-g4hd.onrender.com'
         : 'http://localhost:5001';
       const response = await fetch(`${baseUrl}/api/events/${selectedEvent._id}/register`, {
         method: 'POST',
