@@ -6,10 +6,32 @@ import EventCard from './components/EventCard';
 import './App.css';
 import AdminPage from './AdminPage';
 
-function EventsOnly({ events, loading, handleEventSelect, usingFallbackData }) {
+function EventsOnly({ events, loading, handleEventSelect, usingFallbackData, refreshEvents }) {
   return (
     <main className="main-content">
-      <h2 className="ongoing-title">Events</h2>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+        <h2 className="ongoing-title" style={{ margin: 0 }}>Events</h2>
+        <button 
+          onClick={refreshEvents}
+          disabled={loading}
+          style={{
+            backgroundColor: '#2196f3',
+            color: 'white',
+            border: 'none',
+            padding: '8px 16px',
+            borderRadius: '4px',
+            cursor: loading ? 'not-allowed' : 'pointer',
+            fontSize: '14px',
+            opacity: loading ? 0.6 : 1,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px'
+          }}
+        >
+          <span>🔄</span>
+          {loading ? 'Refreshing...' : 'Refresh'}
+        </button>
+      </div>
       {usingFallbackData && (
         <div style={{
           backgroundColor: '#fff3cd',
@@ -67,65 +89,69 @@ function App() {
   const [adminPassword, setAdminPassword] = useState('');
   const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false);
   const [usingFallbackData, setUsingFallbackData] = useState(false);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [lastUpdated, setLastUpdated] = useState(null);
+
+  const fetchEvents = async () => {
+    const baseUrl = process.env.NODE_ENV === 'production' 
+      ? 'https://ami-backend-g4hd.onrender.com'
+      : 'http://localhost:5001';
+    
+    try {
+      // Add timeout to prevent hanging
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+      
+      const response = await fetch(`${baseUrl}/api/events`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        mode: 'cors',
+        signal: controller.signal
+      });
+      
+      clearTimeout(timeoutId);
+      
+      if (!response.ok) throw new Error('Failed to fetch events');
+      const data = await response.json();
+      setEvents(data);
+      setUsingFallbackData(false);
+      setLastUpdated(new Date());
+    } catch (err) {
+      // Fallback data when backend is not available
+      console.log('Backend not available, using fallback data:', err.message);
+      setUsingFallbackData(true);
+      setEvents([
+        {
+          _id: '1',
+          title: 'Weekly Quran Study',
+          description: 'Join us for our weekly Quran study session',
+          date: '2025-06-15T19:00:00Z',
+          location: 'Community Center',
+          capacity: 50,
+          image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=300&fit=crop&auto=format',
+          registeredUsers: []
+        },
+        {
+          _id: '2', 
+          title: 'Community Iftar',
+          description: 'Breaking fast together as a community',
+          date: '2025-06-20T18:30:00Z',
+          location: 'Main Hall',
+          capacity: 100,
+          image: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&h=300&fit=crop&auto=format',
+          registeredUsers: []
+        }
+      ]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchEvents = async () => {
-      const baseUrl = process.env.NODE_ENV === 'production' 
-        ? 'https://ami-backend-g4hd.onrender.com'
-        : 'http://localhost:5001';
-      
-      try {
-        // Add timeout to prevent hanging
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
-        
-        const response = await fetch(`${baseUrl}/api/events`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          mode: 'cors',
-          signal: controller.signal
-        });
-        
-        clearTimeout(timeoutId);
-        
-        if (!response.ok) throw new Error('Failed to fetch events');
-        const data = await response.json();
-        setEvents(data);
-        setUsingFallbackData(false);
-      } catch (err) {
-        // Fallback data when backend is not available
-        console.log('Backend not available, using fallback data:', err.message);
-        setUsingFallbackData(true);
-        setEvents([
-          {
-            _id: '1',
-            title: 'Weekly Quran Study',
-            description: 'Join us for our weekly Quran study session',
-            date: '2025-06-15T19:00:00Z',
-            location: 'Community Center',
-            capacity: 50,
-            image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=300&fit=crop&auto=format',
-            registeredUsers: []
-          },
-          {
-            _id: '2', 
-            title: 'Community Iftar',
-            description: 'Breaking fast together as a community',
-            date: '2025-06-20T18:30:00Z',
-            location: 'Main Hall',
-            capacity: 100,
-            image: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&h=300&fit=crop&auto=format',
-            registeredUsers: []
-          }
-        ]);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchEvents();
-  }, []);
+  }, [refreshTrigger]); // Re-fetch when refreshTrigger changes
 
   const handleEventSelect = (event) => {
     setSelectedEvent(event);
@@ -193,8 +219,22 @@ function App() {
     }
   };
 
+  const refreshEvents = () => {
+    setLoading(true);
+    fetchEvents();
+  };
+
+  const handleBackToMain = () => {
+    setShowAdmin(false);
+    setIsAdminAuthenticated(false);
+    // Refresh events when returning from admin
+    setTimeout(() => {
+      refreshEvents();
+    }, 100);
+  };
+
   if (showAdmin && isAdminAuthenticated) {
-    return <AdminPage />;
+    return <AdminPage onBackToMain={handleBackToMain} />;
   }
 
   return (
@@ -207,7 +247,29 @@ function App() {
               <h1 className="ami-title">AMI</h1>
               <h2 className="ami-subtitle">Asosiasi Muslim Indonesia</h2>
             </div>
-            <h2 className="ongoing-title">Events</h2>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+              <h2 className="ongoing-title" style={{ margin: 0 }}>Events</h2>
+              <button 
+                onClick={refreshEvents}
+                disabled={loading}
+                style={{
+                  backgroundColor: '#2196f3',
+                  color: 'white',
+                  border: 'none',
+                  padding: '8px 16px',
+                  borderRadius: '4px',
+                  cursor: loading ? 'not-allowed' : 'pointer',
+                  fontSize: '14px',
+                  opacity: loading ? 0.6 : 1,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}
+              >
+                <span>🔄</span>
+                {loading ? 'Refreshing...' : 'Refresh'}
+              </button>
+            </div>
             {usingFallbackData && (
               <div style={{
                 backgroundColor: '#fff3cd',
@@ -320,7 +382,7 @@ function App() {
           </main>
         } />
         <Route path="/events" element={
-          <EventsOnly events={events} loading={loading} handleEventSelect={handleEventSelect} usingFallbackData={usingFallbackData} />
+          <EventsOnly events={events} loading={loading} handleEventSelect={handleEventSelect} usingFallbackData={usingFallbackData} refreshEvents={refreshEvents} />
         } />
       </Routes>
       <Footer onLogoClick={handleFooterLogoClick} />

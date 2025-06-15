@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './App.css';
 import * as XLSX from 'xlsx';
 
-function AdminPage() {
+function AdminPage({ onBackToMain }) {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showCreateForm, setShowCreateForm] = useState(false);
@@ -215,7 +215,23 @@ function AdminPage() {
 
   return (
     <div className="admin-page">
-      <h1>Admin Dashboard</h1>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+        <h1>Admin Dashboard</h1>
+        <button 
+          onClick={onBackToMain}
+          style={{
+            backgroundColor: '#666',
+            color: 'white',
+            border: 'none',
+            padding: '10px 20px',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontSize: '14px'
+          }}
+        >
+          ← Back to Main
+        </button>
+      </div>
       
       {!backendAvailable && (
         <div style={{

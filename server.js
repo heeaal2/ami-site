@@ -188,9 +188,11 @@ app.post('/api/upload', (req, res) => {
 // Routes
 app.get('/api/events', async (req, res) => {
   try {
-    // Add performance headers
+    // Add performance headers - but no caching for events to ensure fresh data
     res.set({
-      'Cache-Control': 'public, max-age=300', // Cache for 5 minutes
+      'Cache-Control': 'no-cache, no-store, must-revalidate', // Always fetch fresh data
+      'Pragma': 'no-cache',
+      'Expires': '0',
       'ETag': false
     });
     
