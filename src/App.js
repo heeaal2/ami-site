@@ -23,7 +23,10 @@ function EventsOnly({ events, loading, handleEventSelect, usingFallbackData }) {
         </div>
       )}
       {loading ? (
-        <div>Loading events...</div>
+        <div className="loading-container">
+          <div className="loading-spinner-main"></div>
+          <p>Loading events...</p>
+        </div>
       ) : (
         <div className="event-cards-row">
           {events.map((event, idx) => {
@@ -67,23 +70,33 @@ function App() {
 
   useEffect(() => {
     const fetchEvents = async () => {
+      const baseUrl = process.env.NODE_ENV === 'production' 
+        ? 'https://ami-backend-g4hd.onrender.com'
+        : 'http://localhost:5001';
+      
       try {
-        const baseUrl = process.env.NODE_ENV === 'production' 
-          ? 'https://ami-backend-g4hd.onrender.com'
-          : 'http://localhost:5001';
+        // Add timeout to prevent hanging
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+        
         const response = await fetch(`${baseUrl}/api/events`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
           },
-          mode: 'cors'
+          mode: 'cors',
+          signal: controller.signal
         });
+        
+        clearTimeout(timeoutId);
+        
         if (!response.ok) throw new Error('Failed to fetch events');
         const data = await response.json();
         setEvents(data);
+        setUsingFallbackData(false);
       } catch (err) {
         // Fallback data when backend is not available
-        console.log('Backend not available, using fallback data');
+        console.log('Backend not available, using fallback data:', err.message);
         setUsingFallbackData(true);
         setEvents([
           {
@@ -93,7 +106,7 @@ function App() {
             date: '2025-06-15T19:00:00Z',
             location: 'Community Center',
             capacity: 50,
-            image: '/src/quran.jpg',
+            image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=300&fit=crop&auto=format',
             registeredUsers: []
           },
           {
@@ -103,7 +116,7 @@ function App() {
             date: '2025-06-20T18:30:00Z',
             location: 'Main Hall',
             capacity: 100,
-            image: '/src/iftar.jpg',
+            image: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&h=300&fit=crop&auto=format',
             registeredUsers: []
           }
         ]);
@@ -208,7 +221,10 @@ function App() {
               </div>
             )}
             {loading ? (
-              <div>Loading events...</div>
+              <div className="loading-container">
+                <div className="loading-spinner-main"></div>
+                <p>Loading events...</p>
+              </div>
             ) : (
               <div className="event-cards-row">
                 {events.map((event, idx) => {

@@ -83,7 +83,7 @@ const upload = multer({
     }
   },
   limits: {
-    fileSize: 20 * 1024 * 1024 // 5MB limit
+    fileSize: 20 * 1024 * 1024 // 20MB limit
   }
 });
 
@@ -188,19 +188,37 @@ app.post('/api/upload', (req, res) => {
 // Routes
 app.get('/api/events', async (req, res) => {
   try {
-    const events = await Event.find();
+    // Add performance headers
+    res.set({
+      'Cache-Control': 'public, max-age=300', // Cache for 5 minutes
+      'ETag': false
+    });
+    
+    const events = await Event.find().lean(); // Use lean() for better performance
     const baseUrl = process.env.NODE_ENV === 'production' 
       ? 'https://ami-backend-g4hd.onrender.com'
       : 'http://localhost:5001';
     
-    // Convert relative image paths to full URLs
-    const eventsWithFullUrls = events.map(event => ({
-      ...event.toObject(),
-      image: event.image && event.image.startsWith('/') 
-        ? `${baseUrl}${event.image}` 
-        : event.image
-    }));
+    // Convert relative image paths to full URLs and validate them
+    const eventsWithFullUrls = events.map(event => {
+      let imageUrl = event.image;
+      
+      // If image starts with '/', make it a full URL
+      if (event.image && event.image.startsWith('/')) {
+        imageUrl = `${baseUrl}${event.image}`;
+      }
+      // If no image or invalid image, provide empty string (fallback will handle it)
+      else if (!event.image || event.image === '') {
+        imageUrl = '';
+      }
+      
+      return {
+        ...event,
+        image: imageUrl
+      };
+    });
     
+    console.log(`📦 Returning ${eventsWithFullUrls.length} events`);
     res.json(eventsWithFullUrls);
   } catch (error) {
     console.error('Error fetching events:', error);
