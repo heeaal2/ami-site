@@ -89,8 +89,7 @@ function App() {
   const [adminPassword, setAdminPassword] = useState('');
   const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false);
   const [usingFallbackData, setUsingFallbackData] = useState(false);
-  const [refreshTrigger, setRefreshTrigger] = useState(0);
-  const [lastUpdated, setLastUpdated] = useState(null);
+
 
   const fetchEvents = async () => {
     const baseUrl = process.env.NODE_ENV === 'production' 
@@ -115,9 +114,8 @@ function App() {
       
       if (!response.ok) throw new Error('Failed to fetch events');
       const data = await response.json();
-      setEvents(data);
-      setUsingFallbackData(false);
-      setLastUpdated(new Date());
+              setEvents(data);
+        setUsingFallbackData(false);
     } catch (err) {
       // Fallback data when backend is not available
       console.log('Backend not available, using fallback data:', err.message);
@@ -151,7 +149,7 @@ function App() {
 
   useEffect(() => {
     fetchEvents();
-  }, [refreshTrigger]); // Re-fetch when refreshTrigger changes
+  }, []); // Fetch events on component mount
 
   const handleEventSelect = (event) => {
     setSelectedEvent(event);
